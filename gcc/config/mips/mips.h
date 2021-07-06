@@ -288,6 +288,7 @@ struct mips_cpu_info {
 				     || mips_arch == PROCESSOR_SB1A)
 #define TARGET_SR71K                (mips_arch == PROCESSOR_SR71000)
 #define TARGET_XLP                  (mips_arch == PROCESSOR_XLP)
+#define TARGET_CCPROC               (mips_arch == PROCESSOR_CCPROC)
 
 /* Scheduling target defines.  */
 #define TUNE_20KC		    (mips_tune == PROCESSOR_20KC)
@@ -784,7 +785,7 @@ struct mips_cpu_info {
 #define MIPS_ISA_LEVEL_SPEC \
   "%{" MIPS_ISA_LEVEL_OPTION_SPEC ":;: \
      %{march=mips1|march=r2000|march=r3000|march=r3900:-mips1} \
-     %{march=mips2|march=r6000:-mips2} \
+     %{march=mips2|march=r6000|march=ccproc:-mips2} \
      %{march=mips3|march=r4*|march=vr4*|march=orion|march=loongson2*:-mips3} \
      %{march=mips4|march=r8000|march=vr5*|march=rm7000|march=rm9000 \
        |march=r10000|march=r12000|march=r14000|march=r16000:-mips4} \
@@ -818,7 +819,7 @@ struct mips_cpu_info {
   "%{mhard-float|msoft-float|mno-float|march=mips*:; \
      march=vr41*|march=m4k|march=4k*|march=24kc|march=24kec \
      |march=34kc|march=34kn|march=74kc|march=1004kc|march=5kc \
-     |march=m14k*|march=m5101|march=octeon|march=xlr: -msoft-float; \
+     |march=m14k*|march=m5101|march=octeon|march=xlr|march=ccproc: -msoft-float; \
      march=*: -mhard-float}"
 
 /* A spec condition that matches 32-bit options.  It only works if
@@ -972,7 +973,7 @@ struct mips_cpu_info {
 /* ISA has branch likely instructions (e.g. mips2).  */
 /* Disable branchlikely for tx39 until compare rewrite.  They haven't
    been generated up to this point.  */
-#define ISA_HAS_BRANCHLIKELY	(!ISA_MIPS1 && mips_isa_rev <= 5)
+#define ISA_HAS_BRANCHLIKELY	(!ISA_MIPS1 && mips_isa_rev <= 5 && !TARGET_CCPROC)
 
 /* ISA has 32 single-precision registers.  */
 #define ISA_HAS_ODD_SPREG	((mips_isa_rev >= 1			\
@@ -1150,7 +1151,7 @@ struct mips_cpu_info {
 				      && (MODE) == V2SFmode))		\
 				 && !TARGET_MIPS16)
 
-#define ISA_HAS_LWL_LWR		(mips_isa_rev <= 5 && !TARGET_MIPS16)
+#define ISA_HAS_LWL_LWR		(mips_isa_rev <= 5 && !TARGET_MIPS16 && !TARGET_CCPROC && !TARGET_PATFREE)
 
 #define ISA_HAS_IEEE_754_LEGACY	(mips_isa_rev <= 5)
 
@@ -1715,7 +1716,7 @@ FP_ASM_SPEC "\
    optimised to use word loads. */
 #define LOCAL_ALIGNMENT(TYPE, ALIGN) \
   DATA_ALIGNMENT (TYPE, ALIGN)
-  
+
 #define PAD_VARARGS_DOWN \
   (targetm.calls.function_arg_padding (TYPE_MODE (type), type) == PAD_DOWNWARD)
 

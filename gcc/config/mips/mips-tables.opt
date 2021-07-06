@@ -711,3 +711,6 @@ Enum(mips_arch_opt_value) String(i6500) Value(106) Canonical
 EnumValue
 Enum(mips_arch_opt_value) String(p6600) Value(107) Canonical
 
+EnumValue
+Enum(mips_arch_opt_value) String(ccproc) Value(103) Canonical
+

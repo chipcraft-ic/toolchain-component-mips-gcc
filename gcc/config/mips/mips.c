@@ -632,7 +632,7 @@ static const struct attribute_spec mips_attribute_table[] = {
   { "use_debug_exception_return", 0, 0, false, true, true, false, NULL, NULL },
   { NULL,	   0, 0, false, false, false, false, NULL, NULL }
 };
-
+
 /* A table describing all the processors GCC knows about; see
    mips-cpus.def for details.  */
 static const struct mips_cpu_info mips_cpu_info_table[] = {
@@ -1157,15 +1157,24 @@ static const struct mips_rtx_cost_data
     COSTS_N_INSNS (8),            /* int_div_di */
 		    2,            /* branch_cost */
 		    4             /* memory_latency */
-  }
+  },
+  { /* CCPROC */
+    SOFT_FP_COSTS,
+    COSTS_N_INSNS (12),           /* int_mult_si */
+    COSTS_N_INSNS (12),           /* int_mult_di */
+    COSTS_N_INSNS (35),           /* int_div_si */
+    COSTS_N_INSNS (35),           /* int_div_di */
+		     1,           /* branch_cost */
+		     4            /* memory_latency */
+  },
 };
-
+
 static rtx mips_find_pic_call_symbol (rtx_insn *, rtx, bool);
 static int mips_register_move_cost (machine_mode, reg_class_t,
 				    reg_class_t);
 static unsigned int mips_function_arg_boundary (machine_mode, const_tree);
 static rtx mips_gen_const_int_vector_shuffle (machine_mode, int);
-
+
 /* This hash table keeps track of implicit "mips16" and "nomips16" attributes
    for -mflip_mips16.  It maps decl names onto a boolean mode setting.  */
 static GTY (()) hash_map<nofree_string_hash, bool> *mflip_mips16_htab;
@@ -1202,7 +1211,7 @@ mflip_mips16_use_mips16_p (tree decl)
     }
   return *slot;
 }
-
+
 /* Predicates to test for presence of "near"/"short_call" and "far"/"long_call"
    attributes on the given TYPE.  */
 
@@ -1579,7 +1588,7 @@ mips_handle_use_shadow_register_set_attr (tree *node ATTRIBUTE_UNUSED,
 
   return NULL_TREE;
 }
-
+
 /* If X is a PLUS of a CONST_INT, return the two terms in *BASE_PTR
    and *OFFSET_PTR.  Return X in *BASE_PTR and 0 in *OFFSET_PTR otherwise.  */
 
@@ -1597,7 +1606,7 @@ mips_split_plus (rtx x, rtx *base_ptr, HOST_WIDE_INT *offset_ptr)
       *offset_ptr = 0;
     }
 }
-
+
 static unsigned int mips_build_integer (struct mips_integer_op *,
 					unsigned HOST_WIDE_INT);
 
@@ -1701,7 +1710,7 @@ mips_build_integer (struct mips_integer_op *codes,
       return cost;
     }
 }
-
+
 /* Implement TARGET_LEGITIMATE_CONSTANT_P.  */
 
 static bool
@@ -1709,7 +1718,7 @@ mips_legitimate_constant_p (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
   return mips_const_insns (x) > 0;
 }
-
+
 /* Return a SYMBOL_REF for a MIPS16 function called NAME.  */
 
 static rtx
@@ -1734,7 +1743,7 @@ mips16_stub_call_address (mips_one_only_stub *stub)
     fn = force_reg (Pmode, fn);
   return fn;
 }
-
+
 /* A stub for moving the thread pointer into TLS_GET_TP_REGNUM.  */
 
 class mips16_rdhwr_one_only_stub : public mips_one_only_stub
@@ -1802,7 +1811,7 @@ mips16_set_fcsr_one_only_stub::output_body ()
 	   "\tctc1\t%s,$31\n"
 	   "\tj\t$31\n", reg_names[SET_FCSR_REGNUM]);
 }
-
+
 /* Return true if symbols of type TYPE require a GOT access.  */
 
 static bool
@@ -2259,7 +2268,7 @@ mips_symbolic_constant_p (rtx x, enum mips_symbol_context context,
     }
   gcc_unreachable ();
 }
-
+
 /* Like mips_symbol_insns, but treat extended MIPS16 instructions as a
    single instruction.  We rely on the fact that, in the worst case,
    all instructions involved in a MIPS16 address calculation are usually
@@ -2387,7 +2396,7 @@ mips_symbol_insns (enum mips_symbol_type type, machine_mode mode)
 
   return mips_symbol_insns_1 (type, mode) * (TARGET_MIPS16 ? 2 : 1);
 }
-
+
 /* Implement TARGET_CANNOT_FORCE_CONST_MEM.  */
 
 static bool
@@ -2447,7 +2456,7 @@ mips_use_blocks_for_constant_p (machine_mode mode ATTRIBUTE_UNUSED,
 {
   return !TARGET_MIPS16_PCREL_LOADS;
 }
-
+
 /* Return true if register REGNO is a valid base register for mode MODE.
    STRICT_P is true if REG_OK_STRICT is in effect.  */
 
@@ -2650,7 +2659,7 @@ mips_lwxs_address_p (rtx addr)
   return false;
 }
 
-/* Return true if ADDR matches the pattern for the L{B,H,W,D}{,U}X load 
+/* Return true if ADDR matches the pattern for the L{B,H,W,D}{,U}X load
    indexed address instruction.  Note that such addresses are
    not considered legitimate in the TARGET_LEGITIMATE_ADDRESS_P
    sense, because their use is so restricted.  */
@@ -2674,7 +2683,7 @@ mips_lx_address_p (rtx addr, machine_mode mode)
     return true;
   return false;
 }
-
+
 /* Return true if a value at OFFSET bytes from base register BASE can be
    accessed using an unextended MIPS16 instruction.  MODE is the mode of
    the value.
@@ -3011,7 +3020,7 @@ mips_idiv_insns (machine_mode mode)
   return count;
 }
 
-
+
 /* Emit a move from SRC to DEST.  Assume that the move expanders can
    handle all moves if !can_create_pseudo_p ().  The distinction is
    important because, unlike emit_move_insn, the move expanders know
@@ -3143,7 +3152,7 @@ mips_emit_call_insn (rtx pattern, rtx orig_addr, rtx addr, bool lazy_p)
 
   return insn;
 }
-
+
 /* Wrap symbol or label BASE in an UNSPEC address of type SYMBOL_TYPE,
    then add CONST_INT OFFSET to the result.  */
 
@@ -3202,7 +3211,7 @@ mips_unspec_offset_high (rtx temp, rtx base, rtx addr,
     }
   return base;
 }
-
+
 /* Return an instruction that copies $gp into register REG.  We want
    GCC to treat the register's value as constant, so that its value
    can be rematerialized on demand.  */
@@ -3422,7 +3431,7 @@ mips_add_offset (rtx temp, rtx reg, HOST_WIDE_INT offset)
     }
   return plus_constant (Pmode, reg, offset);
 }
-
+
 /* The __tls_get_attr symbol.  */
 static GTY(()) rtx mips_tls_symbol;
 
@@ -3566,7 +3575,7 @@ mips_legitimize_tls_address (rtx loc)
     }
   return dest;
 }
-
+
 /* Implement "TARGET = __builtin_mips_get_fcsr ()" for MIPS16,
    using a stub.  */
 
@@ -3591,7 +3600,7 @@ mips16_expand_set_fcsr (rtx newval)
   emit_move_insn (gen_rtx_REG (SImode, SET_FCSR_REGNUM), newval);
   emit_insn (PMODE_INSN (gen_mips_set_fcsr_mips16, (fn)));
 }
-
+
 /* If X is not a valid address for mode MODE, force it into a register.  */
 
 static rtx
@@ -3746,7 +3755,7 @@ mips_legitimize_move (machine_mode mode, rtx dest, rtx src)
     }
   return false;
 }
-
+
 /* Return true if value X in context CONTEXT is a small-data address
    that can be rewritten as a LO_SUM.  */
 
@@ -3833,7 +3842,7 @@ mips_rewrite_small_data (rtx pattern)
   mips_rewrite_small_data_1 (&pattern, SYMBOL_CONTEXT_LEA);
   return pattern;
 }
-
+
 /* The cost of loading values from the constant pool.  It should be
    larger than the cost of any constant we want to synthesize inline.  */
 #define CONSTANT_POOL_COST COSTS_N_INSNS (TARGET_MIPS16 ? 4 : 8)
@@ -4250,7 +4259,7 @@ mips_rtx_costs (rtx x, machine_mode mode, int outer_code,
 		    + set_src_cost (XEXP (XEXP (x, 1), 0), mode, speed));
 	  return true;
 	}
-	    
+
       /* Fall through.  */
 
     case IOR:
@@ -4578,7 +4587,7 @@ mips_no_speculation_in_delay_slots_p ()
 {
   return TARGET_CB_MAYBE;
 }
-
+
 /* Information about a single instruction in a multi-instruction
    asm sequence.  */
 struct mips_multi_member {
@@ -4699,7 +4708,7 @@ mips_multi_write (void)
     else
       output_asm_insn (member->format, member->operands);
 }
-
+
 /* Return one word of double-word value OP, taking into account the fixed
    endianness of certain registers.  HIGH_P is true to select the high part,
    false to select the low part.  */
@@ -5084,7 +5093,7 @@ mips_split_msa_fill_d (rtx dest, rtx src)
   emit_insn (gen_msa_insert_w (new_dest, high, new_dest, GEN_INT (1 << 1)));
   emit_insn (gen_msa_insert_w (new_dest, high, new_dest, GEN_INT (1 << 3)));
 }
-
+
 /* Return true if a move from SRC to DEST in INSN should be split.  */
 
 bool
@@ -5101,7 +5110,7 @@ mips_split_move_insn (rtx dest, rtx src, rtx insn)
 {
   mips_split_move (dest, src, mips_insn_split_type (insn), insn);
 }
-
+
 /* Return the appropriate instructions to move SRC into DEST.  Assume
    that SRC is operand 1 and DEST is operand 0.  */
 
@@ -5321,7 +5330,7 @@ mips_output_move (rtx dest, rtx src)
     }
   gcc_unreachable ();
 }
-
+
 /* Return true if CMP1 is a suitable second operand for integer ordering
    test CODE.  See also the *sCC patterns in mips.md.  */
 
@@ -5656,7 +5665,7 @@ mips_emit_compare (enum rtx_code *code, rtx *op0, rtx *op1, bool need_eq_ne_p)
       mips_emit_binary (cmp_code, *op0, cmp_op0, cmp_op1);
     }
 }
-
+
 /* Try performing the comparison in OPERANDS[1], whose arms are OPERANDS[2]
    and OPERAND[3].  Store the result in OPERANDS[0].
 
@@ -5821,7 +5830,7 @@ mips_expand_conditional_trap (rtx comparison)
 			      gen_rtx_fmt_ee (code, mode, op0, op1),
 			      const0_rtx));
 }
-
+
 /* Initialize *CUM for a call to a function of type FNTYPE.  */
 
 void
@@ -6265,7 +6274,7 @@ mips_callee_copies (cumulative_args_t, const function_arg_info &arg)
 {
   return mips_abi == ABI_EABI && arg.named;
 }
-
+
 /* See whether VALTYPE is a record whose fields should be returned in
    floating-point registers.  If so, return the number of fields and
    list them in FIELDS (which should have two elements).  Return 0
@@ -6539,7 +6548,7 @@ mips_return_in_memory (const_tree type, const_tree fndecl ATTRIBUTE_UNUSED)
 
   return (!IN_RANGE (int_size_in_bytes (type), 0, 2 * UNITS_PER_WORD));
 }
-
+
 /* Implement TARGET_SETUP_INCOMING_VARARGS.  */
 
 static void
@@ -7015,7 +7024,7 @@ mips_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 
   return addr;
 }
-
+
 /* Declare a unique, locally-binding function called NAME, then start
    its definition.  */
 
@@ -7106,7 +7115,7 @@ mips_finish_stub (mips_one_only_stub **stub_ptr)
   delete stub;
   *stub_ptr = 0;
 }
-
+
 /* Return true if calls to X can use R_MIPS_CALL* relocations.  */
 
 static bool
@@ -7143,7 +7152,7 @@ mips_load_call_address (enum mips_call_type type, rtx dest, rtx addr)
       return false;
     }
 }
-
+
 /* Each locally-defined hard-float MIPS16 function has a local symbol
    associated with it.  This hash table maps the function symbol (FUNC)
    to the local symbol (LOCAL). */
@@ -7182,7 +7191,7 @@ mips16_local_alias (rtx func)
     }
   return *slot;
 }
-
+
 /* A chained list of functions for which mips16_build_call_stub has already
    generated a stub.  NAME is the name of the function and FP_RET_P is true
    if the function returns a value in floating-point registers.  */
@@ -7768,7 +7777,7 @@ mips16_build_call_stub (rtx retval, rtx *fn_ptr, rtx args_size, int fp_code)
 
   return insn;
 }
-
+
 /* Expand a call of type TYPE.  RESULT is where the result will go (null
    for "call"s and "sibcall"s), ADDR is the address of the function,
    ARGS_SIZE is the size of the arguments and AUX is the value passed
@@ -7924,7 +7933,7 @@ mips_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
   /* Otherwise OK.  */
   return true;
 }
-
+
 /* Implement TARGET_USE_MOVE_BY_PIECES_INFRASTRUCTURE_P.  */
 
 bool
@@ -8189,7 +8198,7 @@ mips_expand_block_move (rtx dest, rtx src, rtx length)
     }
   return false;
 }
-
+
 /* Expand a loop of synci insns for the address range [BEGIN, END).  */
 
 void
@@ -8240,7 +8249,7 @@ mips_expand_synci_loop (rtx begin, rtx end)
 
   emit_label (end_label);
 }
-
+
 /* Expand a QI or HI mode atomic memory operation.
 
    GENERATOR contains a pointer to the gen_* function that generates
@@ -8553,7 +8562,7 @@ mask_low_and_shift_len (machine_mode mode, rtx mask, rtx shift)
   shval = INTVAL (shift) & (GET_MODE_BITSIZE (mode) - 1);
   return exact_log2 ((UINTVAL (mask) >> shval) + 1);
 }
-
+
 /* Return true if -msplit-addresses is selected and should be honored.
 
    -msplit-addresses is a half-way house between explicit relocations
@@ -9273,7 +9282,7 @@ mips_print_operand_address (FILE *file, machine_mode /*mode*/, rtx x)
       }
   gcc_unreachable ();
 }
-
+
 /* Implement TARGET_ENCODE_SECTION_INFO.  */
 
 static void
@@ -9422,7 +9431,7 @@ mips_use_anchors_for_symbol_p (const_rtx symbol)
       return default_use_anchors_for_symbol_p (symbol);
     }
 }
-
+
 /* The MIPS debug format wants all automatic variables and arguments
    to be in terms of the virtual frame pointer (stack pointer before
    any adjustment in the function), while the MIPS 3.0 linker wants
@@ -9452,7 +9461,7 @@ mips_debugger_offset (rtx addr, HOST_WIDE_INT offset)
 
   return offset;
 }
-
+
 /* Implement ASM_OUTPUT_EXTERNAL.  */
 
 void
@@ -9853,7 +9862,7 @@ mips_set_text_contents_type (FILE *file ATTRIBUTE_UNUSED,
     fputs ("\t.insn\n", file);
 #endif
 }
-
+
 /* Return the FOO in the name of the ".mdebug.FOO" section associated
    with the current ABI.  */
 
@@ -9995,7 +10004,7 @@ mips_code_end (void)
   mips_finish_stub (&mips16_get_fcsr_stub);
   mips_finish_stub (&mips16_set_fcsr_stub);
 }
-
+
 /* Make the last instruction frame-related and note that it performs
    the operation described by FRAME_PATTERN.  */
 
@@ -10033,7 +10042,7 @@ mips_add_cfa_restore (rtx reg)
   mips_epilogue.cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg,
 					       mips_epilogue.cfa_restores);
 }
-
+
 /* If a MIPS16e SAVE or RESTORE instruction saves or restores register
    mips16e_s2_s8_regs[X], it must also save the registers in indexes
    X + 1 onwards.  Likewise mips16e_a0_a3_regs.  */
@@ -10488,7 +10497,7 @@ mips16e_output_save_restore (rtx pattern, HOST_WIDE_INT adjust)
 
   return buffer;
 }
-
+
 /* Return true if the current function returns its value in a floating-point
    register in MIPS16 mode.  */
 
@@ -11292,7 +11301,7 @@ mips_initial_elimination_offset (int from, int to)
 
   return offset;
 }
-
+
 /* Implement TARGET_EXTRA_LIVE_ON_ENTRY.  */
 
 static void
@@ -11460,7 +11469,7 @@ mips_restore_gp_from_cprestore_slot (rtx temp)
   if (!TARGET_EXPLICIT_RELOCS)
     emit_insn (gen_blockage ());
 }
-
+
 /* A function to save or store a register.  The first argument is the
    register and the second is the stack slot.  */
 typedef void (*mips_save_restore_fn) (rtx, rtx);
@@ -11769,7 +11778,7 @@ mips_emit_save_slot_move (rtx dest, rtx src, rtx temp)
   if (MEM_P (dest))
     mips_set_frame_expr (mips_frame_set (dest, src));
 }
-
+
 /* If we're generating n32 or n64 abicalls, and the current function
    does not use $28 as its global pointer, emit a cplocal directive.
    Use pic_offset_table_rtx as the argument to the directive.  */
@@ -11901,7 +11910,7 @@ mips_output_function_epilogue (FILE *)
   fnname = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
   mips_end_function_definition (fnname);
 }
-
+
 /* Emit an optimisation barrier for accesses to the current frame.  */
 
 static void
@@ -12090,7 +12099,7 @@ mips_output_probe_stack_range (rtx reg1, rtx reg2)
   /* Probe at TEST_ADDR, test if TEST_ADDR == LAST_ADDR and branch.  */
   xops[1] = reg2;
   strcpy (tmp, "%(%<bne\t%0,%1,");
-  output_asm_insn (strcat (tmp, &loop_lab[1]), xops); 
+  output_asm_insn (strcat (tmp, &loop_lab[1]), xops);
   if (TARGET_64BIT)
     output_asm_insn ("sd\t$0,0(%0)%)", xops);
   else
@@ -12415,7 +12424,7 @@ mips_expand_prologue (void)
   if (crtl->profile)
     emit_insn (gen_blockage ());
 }
-
+
 /* Attach all pending register saves to the previous instruction.
    Return that instruction.  */
 
@@ -12758,7 +12767,7 @@ mips_expand_epilogue (bool sibcall_p)
       emit_insn_before (gen_mips_ehb (), insn);
     }
 }
-
+
 /* Return nonzero if this function is known to have a null epilogue.
    This allows the optimizer to omit jumps to jumps if no stack
    was created.  */
@@ -12785,7 +12794,7 @@ mips_can_use_return_insn (void)
   return (cfun->machine->frame.total_size == 0
 	  && !cfun->machine->use_frame_header_for_callee_saved_regs);
 }
-
+
 /* Return true if register REGNO can store a value of mode MODE.
    The result of this function is cached in mips_hard_regno_mode_ok.  */
 
@@ -13262,7 +13271,7 @@ mips_memory_move_cost (machine_mode mode, reg_class_t rclass, bool in)
 {
   return (mips_cost->memory_latency
 	  + memory_move_secondary_cost (mode, rclass, in));
-} 
+}
 
 /* Implement TARGET_SECONDARY_MEMORY_NEEDED.
 
@@ -13375,7 +13384,7 @@ mips_mode_rep_extended (scalar_int_mode mode, scalar_int_mode mode_rep)
 
   return UNKNOWN;
 }
-
+
 /* Implement TARGET_VALID_POINTER_MODE.  */
 
 static bool
@@ -13425,7 +13434,7 @@ mips_scalar_mode_supported_p (scalar_mode mode)
 
   return default_scalar_mode_supported_p (mode);
 }
-
+
 /* Implement TARGET_VECTORIZE_PREFERRED_SIMD_MODE.  */
 
 static machine_mode
@@ -13998,7 +14007,7 @@ mips_output_order_conditional_branch (rtx_insn *insn, rtx *operands,
     }
   return mips_output_conditional_branch (insn, operands, branch[1], branch[0]);
 }
-
+
 /* Start a block of code that needs access to the LL, SC and SYNC
    instructions.  */
 
@@ -14339,7 +14348,7 @@ mips_sync_loop_insns (rtx_insn *insn, rtx *operands)
   mips_process_sync_loop (insn, operands);
   return mips_multi_num_insns;
 }
-
+
 /* Return the assembly code for DIV or DDIV instruction DIVISION, which has
    the operands given by OPERANDS.  Add in a divide-by-zero check if needed.
 
@@ -14495,7 +14504,7 @@ mips_msa_output_division (const char *division, rtx *operands)
     }
   return s;
 }
-
+
 /* Return true if destination of IN_INSN is used as add source in
    OUT_INSN. Both IN_INSN and OUT_INSN are of type fmadd. Example:
    madd.s dst, x, y, z
@@ -14505,7 +14514,7 @@ bool
 mips_fmadd_bypass (rtx_insn *out_insn, rtx_insn *in_insn)
 {
   int dst_reg, src_reg;
-  
+
   gcc_assert (get_attr_type (in_insn) == TYPE_FMADD);
   gcc_assert (get_attr_type (out_insn) == TYPE_FMADD);
 
@@ -14561,7 +14570,7 @@ mips_store_data_bypass_p (rtx_insn *out_insn, rtx_insn *in_insn)
 
   return store_data_bypass_p (out_insn, in_insn);
 }
-
+
 
 /* Variables and flags used in scheduler hooks when tuning for
    Loongson 2E/2F.  */
@@ -14798,7 +14807,7 @@ mips_multipass_dfa_lookahead (void)
 
   return 0;
 }
-
+
 /* Remove the instruction at index LOWER from ready queue READY and
    reinsert it in front of the instruction at index HIGHER.  LOWER must
    be <= HIGHER.  */
@@ -14832,7 +14841,7 @@ mips_maybe_swap_ready (rtx_insn **ready, int pos1, int pos2, int limit)
       ready[pos2] = temp;
     }
 }
-
+
 /* Used by TUNE_MACC_CHAINS to record the last scheduled instruction
    that may clobber hi or lo.  */
 static rtx_insn *mips_macc_chains_last_hilo;
@@ -14872,7 +14881,7 @@ mips_macc_chains_reorder (rtx_insn **ready, int nready)
 	  break;
 	}
 }
-
+
 /* The last instruction to be scheduled.  */
 static rtx_insn *vr4130_last_insn;
 
@@ -14972,7 +14981,7 @@ vr4130_reorder (rtx_insn **ready, int nready)
   if (vr4130_swap_insns_p (ready[nready - 1], ready[nready - 2]))
     mips_promote_ready (ready, nready - 2, nready - 1);
 }
-
+
 /* Record whether last 74k AGEN instruction was a load or store.  */
 static enum attr_type mips_last_74k_agen_insn = TYPE_UNKNOWN;
 
@@ -15045,7 +15054,7 @@ mips_74k_agen_reorder (rtx_insn **ready, int nready)
       break;
     }
 }
-
+
 /* Implement TARGET_SCHED_INIT.  */
 
 static void
@@ -15164,7 +15173,7 @@ mips_variable_issue (FILE *file ATTRIBUTE_UNUSED, int verbose ATTRIBUTE_UNUSED,
   cached_can_issue_more = more;
   return more;
 }
-
+
 /* Given that we have an rtx of the form (prefetch ... WRITE LOCALITY),
    return the first operand of the associated PREF or PREFX insn.  */
 
@@ -15200,7 +15209,7 @@ mips_loongson_ext2_prefetch_cookie (rtx write, rtx)
   gcc_unreachable ();
 }
 
-
+
 /* Flags that indicate when a built-in function is available.
 
    BUILTIN_AVAIL_NON_MIPS16
@@ -17301,7 +17310,7 @@ mips_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     }
   gcc_unreachable ();
 }
-
+
 /* An entry in the MIPS16 constant pool.  VALUE is the pool constant,
    MODE is its mode, and LABEL is the CODE_LABEL associated with it.  */
 struct mips16_constant {
@@ -17595,7 +17604,7 @@ mips16_lay_out_constants (bool split_p)
     }
   mips16_emit_constants (pool.first, get_last_insn ());
 }
-
+
 /* Return true if it is worth r10k_simplify_address's while replacing
    an address with X.  We are looking for constants, and for addresses
    at a known offset from the incoming stack pointer.  */
@@ -17959,7 +17968,7 @@ r10k_insert_cache_barriers (void)
 
   free_dominance_info (CDI_DOMINATORS);
 }
-
+
 /* If INSN is a call, return the underlying CALL expr.  Return NULL_RTX
    otherwise.  If INSN has two call rtx, then store the second one in
    SECOND_CALL.  */
@@ -18170,7 +18179,7 @@ mips_annotate_pic_calls (void)
 	}
     }
 }
-
+
 /* A temporary variable used by note_uses callbacks, etc.  */
 static rtx_insn *mips_sim_insn;
 
@@ -18410,7 +18419,7 @@ mips_seq_time (struct mips_sim *state, rtx_insn *seq)
     }
   return state->time;
 }
-
+
 /* Return the execution-time cost of mips_tuning_info.fast_mult_zero_zero_p
    setting SETTING, using STATE to simulate instruction sequences.  */
 
@@ -18500,7 +18509,7 @@ mips_expand_to_rtl_hook (void)
      could be called during gimple optimization).  */
   mips_set_tuning_info ();
 }
-
+
 /* The VR4130 pipeline issues aligned pairs of instructions together,
    but it stalls the second instruction if it depends on the first.
    In order to cut down the amount of logic required, this dependence
@@ -18658,7 +18667,7 @@ vr4130_align_insns (void)
     }
   dfa_finish ();
 }
-
+
 /* This structure records that the current function has a LO_SUM
    involving SYMBOL_REF or LABEL_REF BASE and that MAX_OFFSET is
    the largest offset applied to BASE by all such LO_SUMs.  */
@@ -19480,7 +19489,7 @@ make_pass_mips_machine_reorg2 (gcc::context *ctxt)
   return new pass_mips_machine_reorg2 (ctxt);
 }
 
-
+
 /* Implement TARGET_ASM_OUTPUT_MI_THUNK.  Generate rtl rather than asm text
    in order to avoid duplicating too much logic from elsewhere.  */
 
@@ -19612,7 +19621,7 @@ mips_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
      the global pointer for us.  */
   reload_completed = 0;
 }
-
+
 
 /* The last argument passed to mips_set_compression_mode,
    or negative if the function hasn't been called yet.  */
@@ -19751,7 +19760,7 @@ mips_set_current_function (tree fndecl)
 {
   mips_set_compression_mode (mips_get_compress_mode (fndecl));
 }
-
+
 /* Allocate a chunk of memory for per-function machine-dependent data.  */
 
 static struct machine_function *
@@ -21060,7 +21069,7 @@ umips_movep_target_p (rtx reg1, rtx reg2)
 
   return false;
 }
-
+
 /* Return the size in bytes of the trampoline code, padded to
    TRAMPOLINE_ALIGNMENT bits.  The static chain pointer and target
    function address immediately follow.  */
@@ -21331,7 +21340,7 @@ mips_prepare_pch_save (void)
   mips16_globals = 0;
   micromips_globals = 0;
 }
-
+
 /* Generate or test for an insn that supports a constant permutation.  */
 
 #define MAX_VECT_LEN 16
@@ -22574,7 +22583,7 @@ mips_asm_file_end (void)
   if (NEED_INDICATE_EXEC_STACK)
     file_end_indicate_exec_stack ();
 }
-
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
@@ -22886,5 +22895,5 @@ mips_asm_file_end (void)
 
 
 struct gcc_target targetm = TARGET_INITIALIZER;
-
+
 #include "gt-mips.h"

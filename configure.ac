@@ -1234,6 +1234,11 @@ case "${target}" in
       noconfigdirs="$noconfigdirs gprof"
     fi
     ;;
+  mips*-cc-elf*)
+    if test x$with_newlib = xyes; then
+      noconfigdirs="$noconfigdirs gprof"
+    fi
+    ;;
   mips*-*-irix5*)
     noconfigdirs="$noconfigdirs gprof target-libgloss"
     ;;
@@ -2612,6 +2617,9 @@ case "${target}" in
     target_makefile_frag="config/mt-spu"
     ;;
   mips*-sde-elf* | mips*-mti-elf* | mips*-img-elf*)
+    target_makefile_frag="config/mt-sde"
+    ;;
+  mips*-cc-elf*)
     target_makefile_frag="config/mt-sde"
     ;;
   mipsisa*-*-elfoabi*)

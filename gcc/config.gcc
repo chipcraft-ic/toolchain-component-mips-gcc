@@ -2619,6 +2619,11 @@ mips*-sde-elf*)
 	    ;;
 	esac
 	;;
+mips*-cc-elf*)
+	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h mips/n32-elf.h mips/sde.h"
+	tmake_file="mips/t-cc-elf"
+	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=1 MIPS_ABI_DEFAULT=ABI_32"
+	;;
 mipsisa32-*-elf* | mipsisa32el-*-elf* | \
 mipsisa32r2-*-elf* | mipsisa32r2el-*-elf* | \
 mipsisa32r6-*-elf* | mipsisa32r6el-*-elf* | \
