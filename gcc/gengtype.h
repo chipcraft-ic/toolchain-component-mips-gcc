@@ -31,7 +31,7 @@ typedef unsigned lang_bitmap;
 /* Variable length structure representing an input file.  A hash table
    ensure uniqueness for a given input file name.  The only function
    allocating input_file-s is input_file_by_name.  */
-struct input_file_st 
+struct input_file_st
 {
   struct outf* inpoutf;  /* Cached corresponding output file, computed
                             in get_output_file_with_visibility.  */
@@ -351,10 +351,10 @@ union_or_struct_p (const_type_p x)
 }
 
 /* Give the file location of a type, if any. */
-static inline struct fileloc* 
+static inline struct fileloc*
 type_fileloc (type_p t)
 {
-  if (!t) 
+  if (!t)
     return NULL;
   if (union_or_struct_p (t))
     return &t->u.s.line;
@@ -441,7 +441,7 @@ extern void note_variable (const char *s, type_p t, options_p o,
 
 /* Lexer and parser routines.  */
 extern int yylex (const char **yylval);
-extern void yybegin (const char *fname);
+extern void gcc_internal_yybegin (const char *fname);
 extern void yyend (void);
 extern void parse_file (const char *name);
 extern bool hit_error;

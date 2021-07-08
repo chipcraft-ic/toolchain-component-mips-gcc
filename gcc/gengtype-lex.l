@@ -202,7 +202,7 @@ CXX_KEYWORD inline|public:|private:|protected:|template|operator|friend|static|m
 %%
 
 void
-yybegin (const char *fname)
+gcc_internal_yybegin (const char *fname)
 {
   yyin = fopen (fname, "r");
   if (yyin == NULL)
