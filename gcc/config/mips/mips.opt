@@ -365,7 +365,7 @@ Target Var(TARGET_SHARED) Init(1)
 When generating -mabicalls code, make the code suitable for use in shared libraries.
 
 mpatfree
-Target Report Mask(PATFREE)
+Target Mask(PATFREE)
 Do not use patented lwl/lwr/swl/swr instructions
 
 msingle-float
