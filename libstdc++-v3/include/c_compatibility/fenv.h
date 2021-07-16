@@ -26,6 +26,10 @@
  *  This is a Standard C++ Library header.
  */
 
+#if !defined __cplusplus || defined _GLIBCXX_INCLUDE_NEXT_C_HEADERS
+# include_next <fenv.h>
+#else
+
 #ifndef _GLIBCXX_FENV_H
 #define _GLIBCXX_FENV_H 1
 
@@ -79,3 +83,6 @@ namespace std
 #endif // C++11
 
 #endif // _GLIBCXX_FENV_H
+
+#endif
+
