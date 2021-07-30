@@ -19838,9 +19838,15 @@ finish_module_processing (cpp_reader *reader)
 	  if (!errorcount)
 	    for (unsigned again = 2; ; again--)
 	      {
+#if defined(__MINGW32__)
+		fd = open (tmp_name,
+			   O_RDWR | O_CREAT | O_TRUNC | O_CLOEXEC | O_BINARY,
+			   S_IRUSR|S_IWUSR|(S_IRUSR >> 3)|(S_IWUSR >> 3));
+#else /* ! WINDOWS */
 		fd = open (tmp_name,
 			   O_RDWR | O_CREAT | O_TRUNC | O_CLOEXEC | O_BINARY,
 			   S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
+#endif
 		e = errno;
 		if (fd >= 0 || !again || e != ENOENT)
 		  break;
